@@ -1,0 +1,9 @@
+{
+  "os_version": "16.04",
+  "os_version_name": "xenial",
+  "os_type": "desktop",
+  "iso_checksum": "655d1ec0a7415b4d963e7f2c40e3d56bd135907dda2cedd0c75209ced3a63103",
+  "iso_checksum_type": "sha256",
+  "iso_url": "http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot/mini.iso",
+  "preseed" : "desktop.seed"
+}

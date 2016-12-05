@@ -1,0 +1,89 @@
+{
+  "variables": {
+    "os_name": "ubuntu",
+    "os_version": "",
+    "os_version_name": "",
+    "os_arch": "amd64",
+    "os_type": "server",
+    "boot_command_prefix": "<tab><wait><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+    "cpus": "2",
+    "memory": "1024",
+    "desktop": "false",
+    "disk_size": "65536",
+    "headless": "true",
+    "http_directory": "preseed/ubuntu",
+    "ssh_fullname": "vagrant",
+    "ssh_username": "vagrant",
+    "ssh_password": "vagrant",
+    "ssh_port": "22",
+    "virtualbox_guest_os_type": "Ubuntu_64"
+  },
+  "builders": [{
+    "type": "virtualbox-iso",
+    "boot_command": [
+      "{{ user `boot_command_prefix` }}",
+      "linux ",
+      "url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{ user `preseed` }} ",
+      "auto=true ",
+      "hostname={{ uuid }} ",
+      "initrd=initrd.gz ",
+      "--- quiet<enter>"
+    ],
+    "disk_size": "{{ user `disk_size` }}",
+    "floppy_files": [
+      "{{ user `http_directory` }}/{{ user `preseed` }}"
+    ],
+    "boot_wait": "5s",
+    "guest_os_type": "{{ user `virtualbox_guest_os_type` }}",
+    "http_directory": "{{ user `http_directory` }}",
+    "iso_checksum": "{{ user `iso_checksum` }}",
+    "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+    "iso_url": "{{ user `iso_url` }}",
+    "ssh_username": "{{ user `ssh_username` }}",
+    "ssh_password": "{{ user `ssh_password` }}",
+    "ssh_port": "{{ user `ssh_port` }}",
+    "ssh_wait_timeout": "3h",
+    "shutdown_command": "echo 'shutdown -P now' > shutdown.sh; echo '{{ user `ssh_password` }}'|sudo -S sh 'shutdown.sh'",
+    "post_shutdown_delay": "5s",
+    "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+    "headless": "{{ user `headless` }}",
+    "virtualbox_version_file": ".vbox_version",
+    "vboxmanage": [
+      [ "modifyvm", "{{.Name}}", "--memory", "{{ user `memory` }}" ],
+      [ "modifyvm", "{{.Name}}", "--cpus", "{{ user `cpus` }}" ]
+    ]
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "only": ["virtualbox-iso"],
+      "execute_command": "echo '{{ user `ssh_password` }}'| {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "override": {
+        "virtualbox-iso": {
+          "scripts": [
+            "scripts/linux/vagrant.sh",
+            "scripts/linux/cleanup.sh",
+            "scripts/linux/zerodisk.sh"
+          ]
+        }
+      }
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "vagrant",
+        "keep_input_artifact": false,
+        "vagrantfile_template": "vagrant/templates/{{ user `os_name` }}-{{ user `os_version` }}-{{ user `os_arch` }}-{{ user `os_type` }}.template",
+        "output": "vagrant/boxes/{{ user `os_name` }}-{{ user `os_version` }}-{{ user `os_arch` }}-{{ user `os_type` }}-{{ .Provider }}.box"
+      },{
+        "type": "shell-local",
+        "script": "scripts/post-processors/localVagrantRegister.sh",
+        "environment_vars": [
+          "boxname={{ user `os_name` }}-{{ user `os_version` }}-{{ user `os_arch` }}-{{ user `os_type` }}",
+          "box={{ user `os_name` }}-{{ user `os_version` }}-{{ user `os_arch` }}-{{ user `os_type` }}-{{ .Provider }}.box"
+        ]
+      }
+    ]
+  ]
+}

@@ -1,0 +1,156 @@
+####################################################################
+# Installation Sources
+####################################################################
+
+# Where are we pulling bits from?
+
+# Note:  To use your own local repository, this is what you want
+# to edit.
+#
+# It should look like this:
+#d-i     mirror/http/hostname    string (IP Address of your local server)
+#d-i     mirror/http/directory   string (HTTP Path to your Repository - like /natty )
+
+d-i     mirror/http/hostname    string fr.archive.ubuntu.com
+d-i     mirror/http/directory   string /ubuntu/
+d-i     mirror/suite            string
+
+d-i	apt-setup/mirror/error	select	Change mirror
+d-i	apt-setup/multiverse	boolean	true
+d-i	apt-setup/restricted	boolean	true
+d-i	apt-setup/universe	boolean	true
+d-i	archive-copier/desktop-task	string
+d-i	archive-copier/ship-task	string
+
+
+####################################################################
+# Software Selections
+####################################################################
+
+tasksel	tasksel/first	multiselect	standard, ubuntu-desktop
+
+# Individual additional packages to install
+d-i pkgsel/include string openssh-server
+
+# Whether to upgrade packages after debootstrap.
+# Allowed values: none, safe-upgrade, full-upgrade
+d-i pkgsel/upgrade select full-upgrade
+
+# Automatically download and install stable updates?
+# Policy for applying updates. May be "none" (no automatic updates),
+# "unattended-upgrades" (install security updates automatically), or
+# "landscape" (manage system with Landscape).
+d-i pkgsel/update-policy select unattended-upgrades
+
+####################################################################
+# Networking
+####################################################################
+
+# Network Configuration
+d-i     netcfg/get_hostname     string  localhost
+d-i     netcfg/get_domain       string  localdomain
+d-i     netcfg/disable_dhcp     boolean false
+d-i	mirror/http/proxy	string
+d-i     netcfg/choose_interface select eth0
+d-i     netcfg/wireless_wep     string
+
+####################################################################
+# Disk Partitioning/Boot loader
+####################################################################
+
+d-i     partman-auto/disk               string /dev/sda
+d-i     partman-auto/method             string regular
+d-i     partman-auto/choose_recipe      select Separate /home partition
+
+# This makes partman automatically partition without confirmation.
+d-i	partman/confirm	boolean	true
+d-i     partman-partitioning/confirm_write_new_label boolean true
+d-i     partman/choose_partition select finish
+d-i     partman/confirm_nooverwrite boolean true
+
+# Boot loader GRUB
+d-i     grub-installer/only_debian boolean true
+
+# This one makes grub-installer install to the MBR even if finds some other OS
+# too, which is less safe as it might not be able to boot that other OS.
+d-i     grub-installer/with_other_os    boolean true
+
+####################################################################
+# Localizations
+####################################################################
+
+# Install Time
+d-i	console-tools/archs string skip-config
+d-i 	debian-installer/locale string fr_FR
+d-i 	console-keymaps-at/keymap select fr
+
+d-i     languagechooser/language-name-fb    select French
+d-i     debian-installer/locale             select fr_FR.UTF-8
+d-i pkgsel/install-language-support boolean true
+
+### Keyboard selection ###
+d-i debian-installer/keymap select fr
+d-i keyboard-configuration/layoutcode string fr
+d-i keyboard-configuration/variantcode string fr
+d-i keyboard-configuration/xkb-keymap select fr
+
+# Timezone
+d-i     tzconfig/gmt            boolean true
+d-i     tzconfig/choose_country_zone/Europe select Paris
+d-i     tzconfig/choose_country_zone_single boolean true
+d-i	time/zone	select	Europe/Paris
+d-i	clock-setup/utc	boolean	true
+d-i	kbd-chooser/method	select	American English
+d-i	mirror/country	string	manual
+d-i     clock-setup/ntp boolean false
+
+####################################################################
+# User Creation
+####################################################################
+
+# Root User
+d-i	passwd/root-login	boolean	false
+
+# Mortal User
+d-i	passwd/user-fullname            string vagrant
+d-i	passwd/username                 string vagrant
+d-i	passwd/user-password-crypted    passwd $1$rAN0x5.5$KRNWZxISB35xPPOdwu20T1
+d-i passwd/auto-login boolean true
+
+d-i user-setup/allow-password-weak boolean true
+d-i user-setup/encrypt-home boolean false
+
+
+####################################################################
+# Additional preseed entries (from data/debconf)
+####################################################################
+
+# Update all packages and clean
+
+#d-i preseed/late_command string \
+#  in-target echo "%vagrant ALL=NOPASSWD:ALL" > /etc/sudoers.d/vagrant; \
+#  in-target chmod 0440 /etc/sudoers.d/vagrant; \
+#  in-target rm -rf /var/lib/apt/lists ; \
+#  in-target apt-get update ; \
+#  in-target apt-get -y upgrade ; \
+#  in-target apt-get -y dist-upgrade ; \
+#  in-target apt-get -y autoremove ; \
+#  in-target apt-get autoclean ; \
+#  in-target apt-get clean
+
+####################################################################
+# Finishing up the installation
+####################################################################
+
+# Avoid that last message about the install being complete.
+d-i finish-install/reboot_in_progress note
+
+# This will prevent the installer from ejecting the CD during the reboot,
+# which is useful in some situations.
+#d-i cdrom-detect/eject boolean false
+
+# This is how to make the installer shutdown when finished, but not
+# reboot into the installed system.
+#d-i debian-installer/exit/halt boolean true
+# This will power off the machine instead of just halting it.
+d-i debian-installer/exit/poweroff boolean false
