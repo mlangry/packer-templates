@@ -1,0 +1,9 @@
+{
+  "os_version": "18.04",
+  "os_version_name": "bionic",
+  "os_type": "desktop",
+  "iso_checksum": "bed8a55ae2a657f8349fe3271097cff3a5b8c3d1048cf258568f1601976fa30d",
+  "iso_checksum_type": "sha256",
+  "iso_url": "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/netboot/mini.iso",
+  "preseed" : "desktop.seed"
+}

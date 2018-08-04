@@ -20,6 +20,7 @@
   },
   "builders": [{
     "type": "virtualbox-iso",
+    "name": "virtualbox",
     "boot_command": [
       "{{ user `boot_command_prefix` }}",
       "linux ",
@@ -45,7 +46,7 @@
     "ssh_wait_timeout": "3h",
     "shutdown_command": "echo 'shutdown -P now' > shutdown.sh; echo '{{ user `ssh_password` }}'|sudo -S sh 'shutdown.sh'",
     "post_shutdown_delay": "5s",
-    "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+    "guest_additions_mode": "attach",
     "headless": "{{ user `headless` }}",
     "virtualbox_version_file": ".vbox_version",
     "vboxmanage": [
@@ -56,13 +57,16 @@
   "provisioners": [
     {
       "type": "shell",
-      "only": ["virtualbox-iso"],
+      "only": ["virtualbox"],
       "execute_command": "echo '{{ user `ssh_password` }}'| {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
       "override": {
-        "virtualbox-iso": {
+        "virtualbox": {
           "scripts": [
             "scripts/linux/vagrant.sh",
+            "scripts/linux/update.sh",
+            "scripts/linux/install.sh",
             "scripts/linux/cleanup.sh",
+            "scripts/linux/VBoxLinuxAdditions.sh",
             "scripts/linux/zerodisk.sh"
           ]
         }
@@ -80,8 +84,7 @@
         "type": "shell-local",
         "script": "scripts/post-processors/localVagrantRegister.sh",
         "environment_vars": [
-          "boxname={{ user `os_name` }}-{{ user `os_version` }}-{{ user `os_arch` }}-{{ user `os_type` }}",
-          "box={{ user `os_name` }}-{{ user `os_version` }}-{{ user `os_arch` }}-{{ user `os_type` }}-{{ .Provider }}.box"
+          "boxname={{ user `os_name` }}-{{ user `os_version` }}-{{ user `os_arch` }}-{{ user `os_type` }}"
         ]
       }
     ]
